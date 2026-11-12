@@ -1,0 +1,186 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    --font-display: 'Space Grotesk', system-ui, sans-serif;
+    --font-serif: 'Fraunces', serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #F5F5F0;
+    color: #1a1a1a;
+    overflow-x: hidden;
+  }
+}
+
+/* ============================================================
+   RETRO NEO-BRUTALIST & PAPER UTILITIES
+   ============================================================ */
+
+/* Retro graph paper background grid */
+.retro-paper-grid {
+  background-color: #F5F5F0;
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Retro dot matrix texture */
+.retro-dot-grid {
+  background-color: #F5F5F0;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+}
+
+/* Neo-Brutalist Hard Borders */
+.border-3 {
+  border-width: 3px !important;
+}
+
+.brutal-border {
+  border: 3px solid #000000 !important;
+}
+.brutal-border-sm {
+  border: 2px solid #000000 !important;
+}
+
+/* Hard Offset Shadows */
+.brutal-shadow {
+  box-shadow: 4px 4px 0px 0px #000000 !important;
+}
+.brutal-shadow-sm {
+  box-shadow: 2px 2px 0px 0px #000000 !important;
+}
+.brutal-shadow-lg {
+  box-shadow: 6px 6px 0px 0px #000000 !important;
+}
+.brutal-shadow-xl {
+  box-shadow: 8px 8px 0px 0px #000000 !important;
+}
+
+/* Retro Card Component */
+.retro-card, .glass-card {
+  background-color: #ffffff;
+  border: 3px solid #000000;
+  box-shadow: 5px 5px 0px 0px #000000;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.retro-card:hover, .glass-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0px 0px #000000;
+}
+
+/* Retro Interactive Button with Physical Press */
+.retro-btn {
+  border: 2px solid #000000;
+  box-shadow: 3px 3px 0px 0px #000000;
+  transition: all 0.1s ease-out;
+  cursor: pointer;
+  user-select: none;
+}
+
+.retro-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px 0px #000000;
+}
+
+.retro-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px 0px #000000;
+}
+
+/* Retro Floating Dock */
+.retro-dock, .glass-dock {
+  background-color: #FFFDF5;
+  border: 3px solid #000000;
+  box-shadow: 6px 6px 0px 0px #000000;
+}
+
+/* Yellow Highlighter Effect */
+.retro-highlight {
+  background: linear-gradient(104deg, rgba(254, 240, 138, 0.9) 0.9%, rgba(253, 224, 71, 0.95) 99.4%);
+  padding: 0 4px;
+  border-radius: 2px;
+}
+
+/* Vintage Tape Strip */
+.tape-strip {
+  background: rgba(254, 243, 199, 0.85);
+  border-left: 2px dashed rgba(217, 119, 6, 0.4);
+  border-right: 2px dashed rgba(217, 119, 6, 0.4);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Notebook & Handwriting Utilities from Module 7 */
+.font-hand {
+  font-family: 'Patrick Hand', cursive, sans-serif;
+}
+.font-caveat {
+  font-family: 'Caveat', cursive, sans-serif;
+}
+.font-clean {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+.notebook-paper-grid {
+  background-color: #fbf8ee;
+  background-image: 
+    linear-gradient(rgba(148, 163, 184, 0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.22) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.notebook-ruled-page {
+  background-color: #fffdf9;
+  background-image: 
+    linear-gradient(#f87171 0px, transparent 1px),
+    linear-gradient(rgba(148, 163, 184, 0.25) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 28px;
+}
+.sketch-card {
+  background-color: #fffdfa;
+  border: 2px solid #334155;
+  border-radius: 4px;
+  box-shadow: 3px 4px 0px rgba(51, 65, 85, 0.2);
+}
+.sketch-card-sm {
+  background-color: #fffdfa;
+  border: 1.5px solid #475569;
+  border-radius: 3px;
+  box-shadow: 2px 2px 0px rgba(71, 85, 105, 0.15);
+}
+.sketch-button {
+  transition: all 0.15s ease-out;
+  border: 2px solid #334155;
+  border-radius: 4px;
+  box-shadow: 2px 3px 0px rgba(51, 65, 85, 0.25);
+}
+.sketch-button:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 4px 0px rgba(51, 65, 85, 0.3);
+}
+.sketch-button:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px rgba(51, 65, 85, 0.25);
+}
+
+/* Custom Clean Scrollbar */
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+::-webkit-scrollbar-track {
+  background: #ECEBE4;
+  border-left: 1px solid #D5D3C8;
+}
+::-webkit-scrollbar-thumb {
+  background: #1E293B;
+  border: 2px solid #ECEBE4;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #000000;
+}

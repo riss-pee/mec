@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "figma": {
+      "command": "figma-mcp",
+      "description": "Figma design system and component synchronization"
+    },
+    "playwright": {
+      "command": "playwright-mcp",
+      "description": "Browser automation and visual verification testing"
+    }
+  }
+}

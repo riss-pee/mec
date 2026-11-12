@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Patrick Hand', cursive, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.015em;
+  }
+  code, kbd, samp, pre, .font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+}
+
+/* Notebook & Handwriting Utilities */
+.font-hand {
+  font-family: 'Patrick Hand', cursive, sans-serif;
+}
+
+.font-caveat {
+  font-family: 'Caveat', cursive, sans-serif;
+}
+
+.font-sketch {
+  font-family: 'Architects Daughter', cursive, sans-serif;
+}
+
+.font-clean {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+/* Notebook Graph Paper Grid */
+.notebook-paper-grid {
+  background-color: #fbf8ee;
+  background-image: 
+    linear-gradient(rgba(148, 163, 184, 0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.22) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Notebook Ruled Lines with Red Margin */
+.notebook-ruled-page {
+  background-color: #fffdf9;
+  background-image: 
+    linear-gradient(#f87171 0px, transparent 1px),
+    linear-gradient(rgba(148, 163, 184, 0.25) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 28px;
+}
+
+/* Hand-drawn Paper Card with Sketchy Shadow */
+.sketch-card {
+  background-color: #fffdfa;
+  border: 2px solid #334155;
+  border-radius: 4px;
+  box-shadow: 3px 4px 0px rgba(51, 65, 85, 0.2);
+}
+
+.sketch-card-sm {
+  background-color: #fffdfa;
+  border: 1.5px solid #475569;
+  border-radius: 3px;
+  box-shadow: 2px 2px 0px rgba(71, 85, 105, 0.15);
+}
+
+.sketch-button {
+  transition: all 0.15s ease-out;
+  border: 2px solid #334155;
+  border-radius: 4px;
+  box-shadow: 2px 3px 0px rgba(51, 65, 85, 0.25);
+}
+
+.sketch-button:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 4px 0px rgba(51, 65, 85, 0.3);
+}
+
+.sketch-button:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px rgba(51, 65, 85, 0.25);
+}
+
+/* Highlighter effect */
+.highlight-yellow {
+  background: linear-gradient(104deg, rgba(254, 240, 138, 0.8) 0.9%, rgba(253, 224, 71, 0.85) 99.4%);
+  padding: 0 4px;
+  border-radius: 2px;
+}
+
+.highlight-cyan {
+  background: linear-gradient(104deg, rgba(165, 243, 252, 0.8) 0.9%, rgba(103, 232, 249, 0.85) 99.4%);
+  padding: 0 4px;
+  border-radius: 2px;
+}
+
+.highlight-pink {
+  background: linear-gradient(104deg, rgba(252, 231, 243, 0.85) 0.9%, rgba(244, 114, 182, 0.4) 99.4%);
+  padding: 0 4px;
+  border-radius: 2px;
+}
+
+/* Tape strip on cards */
+.tape-strip {
+  background: rgba(254, 243, 199, 0.7);
+  border-left: 2px dashed rgba(217, 119, 6, 0.3);
+  border-right: 2px dashed rgba(217, 119, 6, 0.3);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Spiral rings binding */
+.spiral-ring {
+  width: 14px;
+  height: 22px;
+  border: 2.5px solid #64748b;
+  border-radius: 8px;
+  background: linear-gradient(to right, #94a3b8, #cbd5e1, #64748b);
+  box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.15);
+}
