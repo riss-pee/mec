@@ -2,7 +2,36 @@
 
 An advanced, interactive educational platform connecting 7 hands-on STEM and mathematics modules into a single, cohesive, high-craft web application.
 
-Designed using **Emil Kowalski Design Principles**, **Anti-Slop Taste Standards**, **Figma MCP Integration**, and **Playwright Automated QA Testing**.
+---
+
+## [v0.1.0]
+
+### Added
+- Role-based navigation headers: `PublicNavigation`, `StudentNavigation`, `TeacherNavigation`, and `AdminNavigation`.
+- Role-specific workspace Hubs: `PublicHub`, `StudentHub`, `TeacherHub`, and `AdminHub`.
+- Role-adapted footers: `StudentFooter`, `TeacherFooter`, and `AdminFooter` alongside `SiteFooter`.
+- Authentication system with role-based authorization for Student, Teacher, and Administrator accounts.
+- Zero-email student account provisioning workflow with 4-digit PIN access and printable/copyable login slips.
+- Dedicated Administrator Gateway (`#/admin/login`) with role validation and security logging.
+- Classroom multiplayer arena view (`ClassroomArenaView`) and live session services (`classroomService`).
+- Student Dashboard and Teacher Dashboard with cohort roster, team battle monitors, and curriculum progress tracking.
+- Pixel-art avatar library with category grouping and avatar customization modal.
+- Bilingual localization engine (`useTranslation`) supporting English and Mizo (`EN` / `MIZO`) across public and workspace interfaces.
+- Legal, privacy, and compliance views: Privacy Policy, Terms of Service, About MEC, Contact, and Cookie Preferences modal.
+- Supabase schema migrations for users, profiles, classrooms, sessions, and Row Level Security (RLS) policies.
+
+### Changed
+- Refactored `src/Hub.tsx` into a centralized role-routing controller that conditionally renders workspace interfaces based on authentication role.
+- Redesigned public navigation to focus on discovery: removed `Launcher`, `Classroom`, and `Dashboard` from unauthenticated views; unified into a single `Sign In` action.
+- Modularized public homepage components into `src/features/hub/pages/PublicHub.tsx`.
+- Updated Sonner `Toaster` positioning to `bottom-right` to prevent blocking top-right navigation buttons (language switcher, profile menu).
+- Enhanced symmetry challenge mode in `src/modules/symmetry-match/components/ChallengeMode.tsx`.
+
+### Fixed
+- Fixed bilingual toggle so language switching applies across all public and authenticated workspace components.
+- Fixed Sonner toast pointer-event interception on top-right navbar controls.
+- Corrected responsive navigation layout for mobile screens with animated drawer.
+- Fixed module category filtering and search synchronization on the public workshops deck.
 
 ---
 
