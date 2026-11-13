@@ -5,6 +5,36 @@ import { NavigationDock } from './components/NavigationDock';
 import { ModuleWrapper } from './components/ModuleWrapper';
 import { CommandPalette } from './components/CommandPalette';
 import { MODULES_REGISTRY, ModuleInfo } from './data/modulesRegistry';
+import { LegalViewId } from './types/legal';
+
+// Legal & Governance Views
+import { PrivacyPolicyView } from './components/legal/PrivacyPolicyView';
+import { TermsOfServiceView } from './components/legal/TermsOfServiceView';
+import { RefundPolicyView } from './components/legal/RefundPolicyView';
+import { CookiePolicyView } from './components/legal/CookiePolicyView';
+import { AccessibilityStatementView } from './components/legal/AccessibilityStatementView';
+import { AboutView } from './components/legal/AboutView';
+import { ContactView } from './components/legal/ContactView';
+import { DataDeletionView } from './components/legal/DataDeletionView';
+import { CookieConsentBanner } from './components/legal/CookieConsentBanner';
+import { StoragePreferencesModal } from './components/legal/StoragePreferencesModal';
+
+// Auth & Dashboard & Classroom Views
+import { useAuth } from './features/auth/AuthContext';
+import { AuthModal } from './features/auth/components/AuthModal';
+import { AuthPageView } from './features/auth/components/AuthPageView';
+import { ProfileCustomizationModal } from './features/auth/components/ProfileCustomizationModal';
+import { GuestLimitModal } from './features/guest/components/GuestLimitModal';
+import {
+  getGuestChallengesTodayCount,
+  getGuestChallengeLimit,
+  isGuestLimitReached,
+} from './features/guest/guestAccessService';
+import { StudentDashboard } from './features/dashboard/components/StudentDashboard';
+import { TeacherDashboard } from './features/dashboard/components/TeacherDashboard';
+import { ClassroomArenaView } from './features/classroom/components/ClassroomArenaView';
+import { AdminLoginView } from './features/admin/components/AdminLoginView';
+import { AdminDashboardLayout } from './features/admin/components/AdminDashboardLayout';
 import { toast } from 'sonner';
 
 // Lazy load each module for optimal performance
@@ -26,63 +56,164 @@ const MODULE_COMPONENTS: Record<string, React.LazyExoticComponent<React.Componen
   'number-line-cruiser': NumberLineCruiserApp,
 };
 
+const LEGAL_ROUTES: Record<string, LegalViewId> = {
+  privacy: 'privacy',
+  terms: 'terms',
+  refund: 'refund',
+  cookies: 'cookies',
+  accessibility: 'accessibility',
+  about: 'about',
+  contact: 'contact',
+  'data-deletion': 'data-deletion',
+};
+
+type SpecialView = 'dashboard' | 'classroom' | 'teacher' | 'admin' | 'admin/login' | 'admin/dashboard' | 'auth' | null;
+
 export default function App() {
-  const [activeModuleId, setActiveModuleId] = useState<string | null>(() => {
-    const hash = window.location.hash.replace('#', '').trim();
-    if (hash && MODULES_REGISTRY.some((m) => m.id === hash)) {
-      return hash;
+  const {
+    user,
+    isTeacher,
+    isAdmin,
+    openAuthModal,
+    isProfileModalOpen,
+    setIsProfileModalOpen,
+    isFirstLoginModalOpen,
+    setIsFirstLoginModalOpen,
+  } = useAuth();
+
+  const getInitialRoute = (): {
+    moduleId: string | null;
+    legalId: LegalViewId | null;
+    specialView: SpecialView;
+  } => {
+    const rawHash = window.location.hash.replace('#', '').trim();
+    if (rawHash === 'auth' || rawHash === 'login' || rawHash === 'signin') {
+      return { moduleId: null, legalId: null, specialView: 'auth' };
     }
-    return null;
-  });
+    if (rawHash === 'admin/login' || rawHash === 'admin-login') {
+      return { moduleId: null, legalId: null, specialView: 'admin/login' };
+    }
+    if (rawHash === 'admin' || rawHash === 'admin/dashboard' || rawHash === 'admin-dashboard') {
+      return { moduleId: null, legalId: null, specialView: 'admin/dashboard' };
+    }
+    if (rawHash === 'dashboard' || rawHash === 'classroom' || rawHash === 'teacher') {
+      return { moduleId: null, legalId: null, specialView: rawHash as SpecialView };
+    }
+    if (rawHash && LEGAL_ROUTES[rawHash]) {
+      return { moduleId: null, legalId: LEGAL_ROUTES[rawHash], specialView: null };
+    }
+    if (rawHash && MODULES_REGISTRY.some((m) => m.id === rawHash)) {
+      return { moduleId: rawHash, legalId: null, specialView: null };
+    }
+    return { moduleId: null, legalId: null, specialView: null };
+  };
 
+  const initial = getInitialRoute();
+  const [activeModuleId, setActiveModuleId] = useState<string | null>(initial.moduleId);
+  const [activeLegalView, setActiveLegalView] = useState<LegalViewId | null>(initial.legalId);
+  const [activeSpecialView, setActiveSpecialView] = useState<SpecialView>(initial.specialView);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
+  const [isGuestLimitModalOpen, setIsGuestLimitModalOpen] = useState(false);
 
-  // Sync hash with activeModuleId
+  // Sync hash with active view
   useEffect(() => {
-    if (activeModuleId) {
+    if (activeSpecialView) {
+      window.location.hash = activeSpecialView;
+    } else if (activeLegalView) {
+      window.location.hash = activeLegalView;
+    } else if (activeModuleId) {
       window.location.hash = activeModuleId;
     } else {
       history.pushState('', document.title, window.location.pathname + window.location.search);
     }
-  }, [activeModuleId]);
+  }, [activeModuleId, activeLegalView, activeSpecialView]);
 
-  // Listen for hash changes (e.g. browser back/forward buttons)
+  // Listen for hash changes
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '').trim();
-      if (hash && MODULES_REGISTRY.some((m) => m.id === hash)) {
+      if (hash === 'auth' || hash === 'login' || hash === 'signin') {
+        setActiveSpecialView('auth');
+        setActiveModuleId(null);
+        setActiveLegalView(null);
+      } else if (hash === 'admin/login' || hash === 'admin-login') {
+        setActiveSpecialView('admin/login');
+        setActiveModuleId(null);
+        setActiveLegalView(null);
+      } else if (hash === 'admin' || hash === 'admin/dashboard' || hash === 'admin-dashboard') {
+        setActiveSpecialView('admin/dashboard');
+        setActiveModuleId(null);
+        setActiveLegalView(null);
+      } else if (hash === 'dashboard' || hash === 'classroom' || hash === 'teacher') {
+        setActiveSpecialView(hash as SpecialView);
+        setActiveModuleId(null);
+        setActiveLegalView(null);
+      } else if (hash && LEGAL_ROUTES[hash]) {
+        setActiveLegalView(LEGAL_ROUTES[hash]);
+        setActiveSpecialView(null);
+        setActiveModuleId(null);
+      } else if (hash && MODULES_REGISTRY.some((m) => m.id === hash)) {
         setActiveModuleId(hash);
+        setActiveLegalView(null);
+        setActiveSpecialView(null);
       } else {
         setActiveModuleId(null);
+        setActiveLegalView(null);
+        setActiveSpecialView(null);
       }
     };
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
+  // Listen for guest challenge limit triggers
+  useEffect(() => {
+    const handleGuestCheck = () => {
+      if (!user && isGuestLimitReached()) {
+        setIsGuestLimitModalOpen(true);
+      }
+    };
+    window.addEventListener('zirna_guest_challenge_complete', handleGuestCheck);
+    return () => window.removeEventListener('zirna_guest_challenge_complete', handleGuestCheck);
+  }, [user]);
+
   // Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger if user is actively typing in an input or textarea
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
         return;
       }
 
-      // Escape key returns to Hub
       if (e.key === 'Escape') {
+        if (isPreferencesOpen) {
+          setIsPreferencesOpen(false);
+          return;
+        }
+        if (activeSpecialView !== null) {
+          setActiveSpecialView(null);
+          toast.info('Returned to Hub Overview');
+          return;
+        }
+        if (activeLegalView !== null) {
+          setActiveLegalView(null);
+          toast.info('Returned to Hub Overview');
+          return;
+        }
         if (activeModuleId !== null) {
           setActiveModuleId(null);
           toast.info('Returned to Hub Overview');
+          return;
         }
-        return;
       }
 
-      // Number keys 1-7 jump directly to modules
-      if (['1', '2', '3', '4', '5', '6', '7'].includes(e.key) && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      if (!activeLegalView && !activeSpecialView && ['1', '2', '3', '4', '5', '6', '7'].includes(e.key) && !e.metaKey && !e.ctrlKey && !e.altKey) {
         const found = MODULES_REGISTRY.find((m) => m.shortcut === e.key);
         if (found) {
           setActiveModuleId(found.id);
+          setActiveLegalView(null);
+          setActiveSpecialView(null);
           toast.success(`Launched ${found.title}`);
         }
       }
@@ -90,7 +221,53 @@ export default function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeModuleId]);
+  }, [activeModuleId, activeLegalView, activeSpecialView, isPreferencesOpen]);
+
+  const handleNavigateLegal = (viewId: LegalViewId) => {
+    setActiveLegalView(viewId);
+    setActiveModuleId(null);
+    setActiveSpecialView(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBackToHub = () => {
+    setActiveLegalView(null);
+    setActiveModuleId(null);
+    setActiveSpecialView(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSelectModule = (id: string) => {
+    setActiveModuleId(id);
+    setActiveLegalView(null);
+    setActiveSpecialView(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNavigateDashboard = () => {
+    if (!user) {
+      openAuthModal('sign-in');
+      return;
+    }
+    setActiveSpecialView('dashboard');
+    setActiveLegalView(null);
+    setActiveModuleId(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNavigateClassroom = () => {
+    setActiveSpecialView('classroom');
+    setActiveLegalView(null);
+    setActiveModuleId(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNavigateTeacher = () => {
+    setActiveSpecialView('teacher');
+    setActiveLegalView(null);
+    setActiveModuleId(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const activeModule = MODULES_REGISTRY.find((m) => m.id === activeModuleId) || null;
   const ActiveComponent = activeModuleId ? MODULE_COMPONENTS[activeModuleId] : null;
@@ -98,7 +275,147 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#F5F5F0] text-slate-900 flex flex-col font-sans selection:bg-[#FFD166] selection:text-black">
       <AnimatePresence mode="wait">
-        {activeModuleId && activeModule && ActiveComponent ? (
+        {/* Dedicated Split-Screen Authentication Experience (Part 6) */}
+        {activeSpecialView === 'auth' ? (
+          <motion.div
+            key="auth-page-view"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="flex-1"
+          >
+            <AuthPageView
+              onSuccess={handleBackToHub}
+              onBackToHub={handleBackToHub}
+            />
+          </motion.div>
+        ) : activeSpecialView === 'admin/login' ? (
+          <motion.div
+            key="admin-login-view"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="flex-1"
+          >
+            <AdminLoginView
+              onSuccess={() => setActiveSpecialView('admin/dashboard')}
+              onBackToHub={handleBackToHub}
+            />
+          </motion.div>
+        ) : activeSpecialView === 'admin' || activeSpecialView === 'admin/dashboard' ? (
+          <motion.div
+            key="admin-dashboard-view"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="flex-1"
+          >
+            {isAdmin ? (
+              <AdminDashboardLayout onBackToHub={handleBackToHub} />
+            ) : (
+              <AdminLoginView
+                onSuccess={() => setActiveSpecialView('admin/dashboard')}
+                onBackToHub={handleBackToHub}
+              />
+            )}
+          </motion.div>
+        ) : activeSpecialView === 'dashboard' ? (
+          <motion.div
+            key="dashboard-view"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.15 }}
+            className="flex-1"
+          >
+            {isTeacher ? (
+              <TeacherDashboard
+                onSelectModule={handleSelectModule}
+                onNavigateClassroom={handleNavigateClassroom}
+                onBackToHub={handleBackToHub}
+              />
+            ) : (
+              <StudentDashboard
+                onSelectModule={handleSelectModule}
+                onNavigateClassroom={handleNavigateClassroom}
+                onBackToHub={handleBackToHub}
+              />
+            )}
+          </motion.div>
+        ) : activeSpecialView === 'classroom' ? (
+          <motion.div
+            key="classroom-view"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.15 }}
+            className="flex-1"
+          >
+            <ClassroomArenaView
+              onSelectModule={handleSelectModule}
+              onNavigateTeacherDashboard={handleNavigateTeacher}
+              onBackToHub={handleBackToHub}
+            />
+          </motion.div>
+        ) : activeSpecialView === 'teacher' ? (
+          <motion.div
+            key="teacher-view"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.15 }}
+            className="flex-1"
+          >
+            <TeacherDashboard
+              onSelectModule={handleSelectModule}
+              onNavigateClassroom={handleNavigateClassroom}
+              onBackToHub={handleBackToHub}
+            />
+          </motion.div>
+        ) : activeLegalView ? (
+          /* State B: Legal & Compliance View Active */
+          <motion.div
+            key={activeLegalView}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.15 }}
+            className="flex-1 flex flex-col"
+          >
+            {activeLegalView === 'privacy' && (
+              <PrivacyPolicyView onNavigateLegal={handleNavigateLegal} onBackToHub={handleBackToHub} />
+            )}
+            {activeLegalView === 'terms' && (
+              <TermsOfServiceView onNavigateLegal={handleNavigateLegal} onBackToHub={handleBackToHub} />
+            )}
+            {activeLegalView === 'refund' && (
+              <RefundPolicyView onNavigateLegal={handleNavigateLegal} onBackToHub={handleBackToHub} />
+            )}
+            {activeLegalView === 'cookies' && (
+              <CookiePolicyView
+                onNavigateLegal={handleNavigateLegal}
+                onBackToHub={handleBackToHub}
+                onOpenPreferences={() => setIsPreferencesOpen(true)}
+              />
+            )}
+            {activeLegalView === 'accessibility' && (
+              <AccessibilityStatementView onNavigateLegal={handleNavigateLegal} onBackToHub={handleBackToHub} />
+            )}
+            {activeLegalView === 'about' && (
+              <AboutView onNavigateLegal={handleNavigateLegal} onBackToHub={handleBackToHub} />
+            )}
+            {activeLegalView === 'contact' && (
+              <ContactView onNavigateLegal={handleNavigateLegal} onBackToHub={handleBackToHub} />
+            )}
+            {activeLegalView === 'data-deletion' && (
+              <DataDeletionView onNavigateLegal={handleNavigateLegal} onBackToHub={handleBackToHub} />
+            )}
+          </motion.div>
+        ) : activeModuleId && activeModule && ActiveComponent ? (
+          /* State C: Educational Module Active with Collaborative Overlay */
           <motion.div
             key={activeModuleId}
             initial={{ opacity: 0, y: 10 }}
@@ -109,8 +426,10 @@ export default function App() {
           >
             <ModuleWrapper
               module={activeModule}
-              onBackToHub={() => setActiveModuleId(null)}
-              onSwitchModule={(id) => setActiveModuleId(id)}
+              onBackToHub={handleBackToHub}
+              onSwitchModule={handleSelectModule}
+              onNavigateLegal={handleNavigateLegal}
+              onOpenStoragePreferences={() => setIsPreferencesOpen(true)}
             >
               <Suspense
                 fallback={
@@ -127,6 +446,7 @@ export default function App() {
             </ModuleWrapper>
           </motion.div>
         ) : (
+          /* State D: Main Hub Overview */
           <motion.div
             key="hub"
             initial={{ opacity: 0, y: 10 }}
@@ -136,25 +456,74 @@ export default function App() {
             className="flex-1"
           >
             <Hub
-              onSelectModule={(id) => setActiveModuleId(id)}
+              onSelectModule={handleSelectModule}
               onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+              onNavigateLegal={handleNavigateLegal}
+              onOpenStoragePreferences={() => setIsPreferencesOpen(true)}
+              onNavigateDashboard={handleNavigateDashboard}
+              onNavigateClassroom={handleNavigateClassroom}
+              onNavigateTeacher={handleNavigateTeacher}
             />
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Floating Retro Tactical Navigation Dock */}
-      <NavigationDock
-        activeModule={activeModuleId}
-        onSelectModule={(id) => setActiveModuleId(id)}
-        onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
-      />
+      {!activeLegalView && !activeSpecialView && (
+        <NavigationDock
+          activeModule={activeModuleId}
+          onSelectModule={handleSelectModule}
+          onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+        />
+      )}
 
       {/* Command Palette Modal */}
       <CommandPalette
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
-        onSelectModule={(id) => setActiveModuleId(id)}
+        onSelectModule={handleSelectModule}
+      />
+
+      {/* Authentication Modal */}
+      <AuthModal />
+
+      {/* Profile & Pixel Avatar Customization Modal */}
+      <ProfileCustomizationModal
+        isOpen={isProfileModalOpen || isFirstLoginModalOpen}
+        onClose={() => {
+          setIsProfileModalOpen(false);
+          setIsFirstLoginModalOpen(false);
+        }}
+      />
+
+      {/* Guest Exploration Limit Modal (Non-coercive reminder after daily limit) */}
+      {isGuestLimitModalOpen && !user && (
+        <GuestLimitModal
+          completedCount={getGuestChallengesTodayCount()}
+          limit={getGuestChallengeLimit()}
+          onOpenSignIn={() => {
+            setIsGuestLimitModalOpen(false);
+            setActiveSpecialView('auth');
+          }}
+          onOpenSignUp={() => {
+            setIsGuestLimitModalOpen(false);
+            setActiveSpecialView('auth');
+          }}
+          onDismiss={() => setIsGuestLimitModalOpen(false)}
+        />
+      )}
+
+      {/* Cookie / Browser Storage Consent Banner */}
+      <CookieConsentBanner
+        onOpenPreferences={() => setIsPreferencesOpen(true)}
+        onNavigateLegal={handleNavigateLegal}
+      />
+
+      {/* Granular Storage Preferences Dialog */}
+      <StoragePreferencesModal
+        isOpen={isPreferencesOpen}
+        onClose={() => setIsPreferencesOpen(false)}
+        onNavigateLegal={handleNavigateLegal}
       />
     </div>
   );
