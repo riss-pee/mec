@@ -8,15 +8,28 @@ import {
   Maximize2, 
   Minimize2,
   Layers,
-  Sparkles
+  Sparkles,
+  Users
 } from 'lucide-react';
 import { MODULES_REGISTRY, ModuleInfo } from '../data/modulesRegistry';
+import { LegalViewId } from '../types/legal';
+import { SiteFooter } from './common/SiteFooter';
+import { TeamScoreStrip } from '../features/multiplayer/components/TeamScoreStrip';
+import { FractionTeamChallenge } from '../features/multiplayer/modules/FractionTeamChallenge';
+import { CollaborativeGridChallenge } from '../features/multiplayer/modules/CollaborativeGridChallenge';
+import { TeamSymmetryChallenge } from '../features/multiplayer/modules/TeamSymmetryChallenge';
+import { AbacusRelayChallenge } from '../features/multiplayer/modules/AbacusRelayChallenge';
+import { CoordinateDefenseChallenge } from '../features/multiplayer/modules/CoordinateDefenseChallenge';
+import { OpticsPredictionChallenge } from '../features/multiplayer/modules/OpticsPredictionChallenge';
+import { NumberLineRaceChallenge } from '../features/multiplayer/modules/NumberLineRaceChallenge';
 import { toast } from 'sonner';
 
 interface ModuleWrapperProps {
   module: ModuleInfo;
   onBackToHub: () => void;
   onSwitchModule: (id: string) => void;
+  onNavigateLegal?: (id: LegalViewId) => void;
+  onOpenStoragePreferences?: () => void;
   children: React.ReactNode;
 }
 
@@ -24,11 +37,14 @@ export const ModuleWrapper: React.FC<ModuleWrapperProps> = ({
   module,
   onBackToHub,
   onSwitchModule,
+  onNavigateLegal = () => {},
+  onOpenStoragePreferences = () => {},
   children,
 }) => {
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isTeamMode, setIsTeamMode] = useState(true); // Default to team mode active for classroom discovery
 
   const toggleSound = () => {
     setIsMuted(!isMuted);
@@ -47,6 +63,61 @@ export const ModuleWrapper: React.FC<ModuleWrapperProps> = ({
     }
   };
 
+  const getChallengeMetadata = () => {
+    switch (module.id) {
+      case 'fraction-zirna':
+        return {
+          title: 'Classroom Pizza Relay',
+          target: 'Divide 1 whole pizza equally among 4 students (1/4 each)',
+          component: <FractionTeamChallenge />,
+        };
+      case 'fraction-grid':
+        return {
+          title: 'Collaborative Grid Shading',
+          target: 'Shade exactly 75% (15/20 cells) on the shared grid',
+          component: <CollaborativeGridChallenge />,
+        };
+      case 'symmetry-match':
+        return {
+          title: 'Team Symmetry Reflection',
+          target: 'Reflect partner pattern across central vertical mirror axis',
+          component: <TeamSymmetryChallenge />,
+        };
+      case 'abacus-math':
+        return {
+          title: 'Soroban Arithmetic Relay',
+          target: 'Solve 348 + 275 step-by-step on beads (Sum = 623)',
+          component: <AbacusRelayChallenge />,
+        };
+      case 'coordinate-defense':
+        return {
+          title: 'Quadrant II Artillery Mission',
+          target: 'Lock and discharge defense vector at (-4, +6)',
+          component: <CoordinateDefenseChallenge />,
+        };
+      case 'optics-lab':
+        return {
+          title: 'Scientific Optics Prediction',
+          target: 'Predict real inverted image distance v for 2f object distance',
+          component: <OpticsPredictionChallenge />,
+        };
+      case 'number-line-cruiser':
+        return {
+          title: 'Signed Integer Team Race',
+          target: 'Navigate cruiser vehicle: -3 + 8 - 4 = +1 milestone',
+          component: <NumberLineRaceChallenge />,
+        };
+      default:
+        return {
+          title: 'Classroom STEM Mission',
+          target: 'Complete module challenge with team members',
+          component: null,
+        };
+    }
+  };
+
+  const challengeData = getChallengeMetadata();
+
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F5F0] text-slate-900 relative">
       {/* Retro Persistent Header Bar */}
@@ -54,7 +125,7 @@ export const ModuleWrapper: React.FC<ModuleWrapperProps> = ({
         <div className="flex items-center gap-3">
           <button
             onClick={onBackToHub}
-            className="retro-btn flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white hover:bg-[#FFF9E6] border-2 border-black text-xs font-mono font-bold text-black shadow-[2px_2px_0px_#000]"
+            className="retro-btn flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white hover:bg-[#FFF9E6] border-2 border-black text-xs font-mono font-bold text-black shadow-[2px_2px_0px_#000] cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
             <span>Hub Overview</span>
@@ -69,7 +140,7 @@ export const ModuleWrapper: React.FC<ModuleWrapperProps> = ({
           <div className="relative">
             <button
               onClick={() => setIsSwitcherOpen(!isSwitcherOpen)}
-              className="flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-black/5 transition-colors text-left border border-transparent hover:border-black/30"
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-black/5 transition-colors text-left border border-transparent hover:border-black/30 cursor-pointer"
             >
               <span className="text-xs font-mono font-black bg-black text-white px-2 py-0.5 rounded-xs">
                 MOD {module.number}
@@ -109,7 +180,7 @@ export const ModuleWrapper: React.FC<ModuleWrapperProps> = ({
                               onSwitchModule(m.id);
                               setIsSwitcherOpen(false);
                             }}
-                            className={`w-full flex items-center justify-between px-2.5 py-2 rounded-md text-left transition-all text-xs font-mono ${
+                            className={`w-full flex items-center justify-between px-2.5 py-2 rounded-md text-left transition-all text-xs font-mono cursor-pointer ${
                               isCurrent
                                 ? 'bg-black text-white font-bold shadow-[2px_2px_0px_#000]'
                                 : 'text-slate-800 hover:bg-[#FFF9E6] hover:text-black border border-transparent hover:border-black'
@@ -135,11 +206,21 @@ export const ModuleWrapper: React.FC<ModuleWrapperProps> = ({
           </div>
         </div>
 
-        {/* Right actions: Audio & Fullscreen */}
+        {/* Right actions: Audio, Fullscreen & Mode Toggle */}
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setIsTeamMode(!isTeamMode)}
+            className={`retro-btn px-2.5 py-1.5 rounded-md border-2 border-black font-mono font-bold text-xs shadow-[2px_2px_0px_#000] flex items-center gap-1.5 cursor-pointer ${
+              isTeamMode ? 'bg-[#FFD166] text-black' : 'bg-white text-slate-700 hover:text-black'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{isTeamMode ? 'Classroom Mode' : 'Solo Mode'}</span>
+          </button>
+
+          <button
             onClick={toggleSound}
-            className="retro-btn p-1.5 rounded-md bg-white border-2 border-black text-black shadow-[2px_2px_0px_#000]"
+            className="retro-btn p-1.5 rounded-md bg-white border-2 border-black text-black shadow-[2px_2px_0px_#000] cursor-pointer"
             title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
           >
             {isMuted ? <VolumeX className="w-4 h-4 text-red-600 stroke-[2.5]" /> : <Volume2 className="w-4 h-4 stroke-[2.5]" />}
@@ -147,7 +228,7 @@ export const ModuleWrapper: React.FC<ModuleWrapperProps> = ({
 
           <button
             onClick={toggleFullscreen}
-            className="retro-btn p-1.5 rounded-md bg-white border-2 border-black text-black shadow-[2px_2px_0px_#000]"
+            className="retro-btn p-1.5 rounded-md bg-white border-2 border-black text-black shadow-[2px_2px_0px_#000] cursor-pointer"
             title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4 stroke-[2.5]" /> : <Maximize2 className="w-4 h-4 stroke-[2.5]" />}
@@ -155,10 +236,37 @@ export const ModuleWrapper: React.FC<ModuleWrapperProps> = ({
         </div>
       </header>
 
+      {/* Persistent Team Score Strip */}
+      <TeamScoreStrip
+        moduleId={module.id}
+        moduleTitle={module.title}
+        challengeTitle={challengeData.title}
+        targetGoal={challengeData.target}
+        isSolo={!isTeamMode}
+        onToggleMode={() => setIsTeamMode(!isTeamMode)}
+      />
+
       {/* Module Content Area */}
-      <main className="flex-1 relative pb-20">
-        {children}
+      <main className="flex-1 relative pb-12">
+        {/* Collaborative Challenge Live Overlay when in Team Mode */}
+        {isTeamMode && challengeData.component && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4">
+            {challengeData.component}
+          </div>
+        )}
+
+        {/* Existing Interactive Module Sandbox */}
+        <div className="relative">
+          {children}
+        </div>
       </main>
+
+      {/* Comprehensive Site Footer for all modules */}
+      <SiteFooter
+        onSelectModule={onSwitchModule}
+        onNavigateLegal={onNavigateLegal}
+        onOpenStoragePreferences={onOpenStoragePreferences}
+      />
     </div>
   );
 };

@@ -222,7 +222,7 @@ export default function ChallengeMode({
               <motion.div
                 key={level.levelNum}
                 id={`level-card-${level.levelNum}`}
-                whileHover={{ y: -4, shadow: '0 10px 25px -5px rgba(0,0,0,0.05)' }}
+                whileHover={{ y: -4, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)' }}
                 className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col justify-between transition-all relative overflow-hidden group"
               >
                 <div>
